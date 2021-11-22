@@ -1,0 +1,7 @@
+name = "AOC2021"
+uuid = "8074e4e6-93b1-4cb4-9423-4aa0b28e125c"
+authors = ["Brynjar Smári Bjarnason <binni@binnisb.com> and contributors"]
+version = "0.1.0"
+
+[compat]
+julia = "1.6"
