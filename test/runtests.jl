@@ -10,6 +10,8 @@ using Test
         @test solve(TestInput, 2, 1) == 150
         @test solve(TestInput, 2, 2) == 900
 
+        @test solve(TestInput, 3, 1) == 198
+        @test solve(TestInput, 3, 2) == 230
 
     end
 
@@ -18,5 +20,7 @@ using Test
         @test solve(FullInput, 1, 2) == 1618
         @test solve(FullInput, 2, 1) == 1746616
         @test solve(FullInput, 2, 2) == 1741971043
+        @test solve(FullInput, 3, 1) == 1997414
+        @test solve(FullInput, 3, 2) == 1032597
     end
 end
