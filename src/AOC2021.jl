@@ -181,10 +181,8 @@ module AOC2021
 
     solve(::Val{7}, lines) = parse.(Int, split(lines[1],","))
     solve(::Val{7},::Val{1}; input, red_func=identity) = begin
-        upper = maximum(input)
-        lower = minimum(input)
         global res = 100000000
-        for i in lower:upper
+        for i in UnitRange(extrema(input)...)
             lens = abs.(i.-input)
             s = sum([red_func(l) for l in lens])
             s < res && (res = s)
@@ -192,5 +190,57 @@ module AOC2021
         res
     end
     solve(::Val{7},::Val{2}; input) = solve(Val(7),Val(1); input=input, red_func=(x->convert(Int,(x*(x+1)/2))))
+    
+    solve(::Val{8}, lines) = lines .|> (l -> split(l,"|") .|> strip .|> split)
+    count_uniqs_8(res_nums) = res_nums .|> length .|> (x-> x ∈ [2,4, 3, 7]) |> sum
+    solve(::Val{8}, ::Val{1}; input) = input .|> (x->count_uniqs_8(x[2])) |> sum
+    parse_input_decode_output(nums, vals) = begin
+        nums = Set.(nums)
+        num_to_str = Dict{Int,Set{Char}}()
+        decode = Dict{Char, Char}()
 
+        lengths = length.(nums)
+
+        for (i,(l,n)) in enumerate(zip(lengths,nums))
+            l == 2 && (num_to_str[1] = n)
+            l == 3 && (num_to_str[7] = n)
+            l == 4 && (num_to_str[4] = n)
+            l == 7 && (num_to_str[8] = n)
+        end
+        eight = num_to_str[8]
+        decode[setdiff(num_to_str[7],num_to_str[1]) |> pop!] = 'a'
+        eg = setdiff(eight,num_to_str[4])
+        for c in eg
+            if setdiff(eight,c) in nums
+                decode[c] = 'e'
+                num_to_str[9] = setdiff(eight, c)
+            else
+                decode[c] = 'g'
+            end
+        end
+
+        bd = setdiff(num_to_str[4],num_to_str[1])
+        for c in bd
+            if setdiff(eight,c) in nums
+                decode[c] = 'd'
+                num_to_str[0] = setdiff(eight, c)
+            else
+                decode[c] = 'b'
+            end
+        end
+        nums = setdiff(nums,values(num_to_str))
+        num_to_str[6] = [n for n in nums if length(n) == 6][1]
+        decode[setdiff(eight, num_to_str[6]) |> pop!] = 'c'
+        decode[setdiff('a':'g',keys(decode)) |> pop!] = 'f'
+
+        encode = Dict((v,k) for (k,v) in decode)
+        num_to_str[3] = setdiff(setdiff(eight,encode['b']),encode['e'])
+        num_to_str[5] = setdiff(num_to_str[6], encode['e'])
+        num_to_str[2] = setdiff(setdiff(eight,encode['b']),encode['f'])
+
+        str_to_num = Dict((v,k) for (k,v) in num_to_str)
+        
+        Set.(vals) .|> (s-> str_to_num[s]) |> join |> x->parse(Int,x)
+    end 
+    solve(::Val{8}, ::Val{2}; input) = input .|> (x->parse_input_decode_output(x...)) |> sum
 end

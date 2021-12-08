@@ -26,6 +26,10 @@ using Test
         
         @test solve(TestInput, 7, 1) == 37
         @test solve(TestInput, 7, 2) == 168
+
+        @test solve(TestInput, 8, 1) == 26
+        @test solve(TestInput, 8, 2) == 61229
+        
     end
 
     @testset "Real Solutions" begin
