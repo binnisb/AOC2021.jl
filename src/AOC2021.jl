@@ -242,5 +242,35 @@ module AOC2021
         
         Set.(vals) .|> (s-> str_to_num[s]) |> join |> x->parse(Int,x)
     end 
-    solve(::Val{8}, ::Val{2}; input) = input .|> (x->parse_input_decode_output(x...)) |> sum
+    solve(::Val{8}, ::Val{2}; input) = input .|> (x->bool_decode(x...)) |> sum
+
+    bool_decode(nums, vals) = begin
+        s1(x) = sum(x,dims=1) |> vec
+        model = 'a':'g'
+        bm = hcat((nums .|> (n -> model .∈ n))...)
+        vm = hcat((vals .|> (n -> model .∈ n))...)
+        s = sum(bm, dims=1)
+
+        # Index of number in bm
+        found = Dict(
+            i=>findfirst(isequal(c),s)[2] for (i,c) in zip([1,4,7,8],[2,4,3,7])
+        )
+
+        bf(n) = bm[:,found[n]]
+        bi(ns) = bm[:,ns]
+
+        ind_069 = (bm .⊻ bf(8)) |> s1 |> x->findall(isequal(1),x)
+        found[6] = bi(ind_069) .| bf(7) |> s1 .|> isequal(7) |> x-> popat!(ind_069, findfirst(x))
+        found[0] = bi(ind_069) .| bf(4) |> s1 .|> isequal(7) |> x-> popat!(ind_069, findfirst(x))
+        found[9] = ind_069[1]
+
+        ind_235 = filter(x->x ∉ values(found), 1:10)
+        found[2] = bi(ind_235) .| bf(4) |> s1 .|> isequal(7) |> x->popat!(ind_235, findfirst(x))
+        found[5] = bi(ind_235) .| bf(2) |> s1 .|> isequal(7) |> x->popat!(ind_235, findfirst(x))
+        found[3] = ind_235[1]
+        new_b = bi([found[k] for k in 0:9])
+        decode = Dict(v=>k for (k,v) in found)
+        eachcol(vm) .|> (x-> x.==bm) .|> (x->all(x,dims=1)) .|> vec .|> findfirst .|> (x->decode[x]) |> join |> x->parse(Int,x)
+        
+    end
 end
