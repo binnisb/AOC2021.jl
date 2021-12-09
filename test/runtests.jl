@@ -29,7 +29,9 @@ using Test
 
         @test solve(TestInput, 8, 1) == 26
         @test solve(TestInput, 8, 2) == 61229
-        
+
+        @test solve(TestInput, 9, 1) == 15
+        @test solve(TestInput, 9, 2) == 1134
     end
 
     @testset "Real Solutions" begin
@@ -44,5 +46,14 @@ using Test
         @test solve(FullInput, 5, 1) == 7674
         @test solve(FullInput, 6, 1; days=80) == 380758
         @test solve(FullInput, 6, 2; days=256) == 1710623015163
+
+        @test solve(FullInput, 7, 1) == 339321
+        @test solve(FullInput, 7, 2) == 95476244
+
+        @test solve(FullInput, 8, 1) == 476
+        @test solve(FullInput, 8, 2) == 1011823
+
+        @test solve(FullInput, 9, 1) == 452
+        @test solve(FullInput, 9, 2) == 1263735
     end
 end

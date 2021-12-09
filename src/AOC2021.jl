@@ -273,4 +273,49 @@ module AOC2021
         eachcol(vm) .|> (x-> x.==bm) .|> (x->all(x,dims=1)) .|> vec .|> findfirst .|> (x->decode[x]) |> join |> x->parse(Int,x)
         
     end
+    pints(x) = parse.(Int,x)
+    solve(::Val{9}, lines) = begin
+        input = lines .|> collect .|> pints |> x->hcat(x...) 
+        r,c = size(input)
+        m = zeros(Int, r+2,c+2)
+        ma = maximum(input) + 10000
+        m[:,1] .= ma
+        m[:,end] .= ma
+        m[1,:] .= ma
+        m[end,:] .= ma
+
+        m[2:end-1,2:end-1] = input[:]
+        m
+    end
+    get_low_points(m) = begin
+        r,c = size(m)
+        check(i,j) =  (([m[i,j-1], m[i,j+1], m[i,j], m[i-1,j], m[i+1,j]] .- m[i,j]) .> 0) |> sum |> isequal(4)
+        res = zeros(Bool,r,c)
+        res[2:end-1, 2:end-1] .= [check(i,j) for i in 2:r-1, j in 2:c-1]
+        res
+    end
+    solve(::Val{9}, ::Val{1}; input) = input |> get_low_points |> x->sum(input[x].+1)
+    valley_size_9(c,valleys) = begin
+        shifts = [CartesianIndex(0,1), CartesianIndex(0,-1), CartesianIndex(1,0), CartesianIndex(-1,0)]
+        to_test = Set{CartesianIndex{2}}([c])
+        done = Set{CartesianIndex{2}}()
+        global count = 0
+        while !isempty(to_test)
+            t = pop!(to_test)
+            push!(done,t)
+            count += valleys[t]
+            new_points = setdiff([t+s for s in shifts if valleys[t+s] != 0], done)
+            !isempty(new_points) && push!(to_test, new_points...)
+        end
+        count
+
+    end
+    solve(::Val{9}, ::Val{2}; input) = begin
+        m = get_low_points(input)
+        valleys = input .< 9
+        vs(x) = valley_size_9(x,valleys)
+        carts = m |> findall .|> vs |> sort |> reverse |> x->reduce(*,x[1:3])
+
+    end
+
 end
