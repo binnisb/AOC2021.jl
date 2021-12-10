@@ -317,5 +317,64 @@ module AOC2021
         carts = m |> findall .|> vs |> sort |> reverse |> x->reduce(*,x[1:3])
 
     end
+    error_map_10(c) = begin
+        c == ')' && return 3
+        c == ']' && return 57
+        c == '}' && return 1197
+        c == '>' && return 25137
+    end
+    abstract type Res end
+    abstract type Incomplete <: Res end
+    abstract type Corrupt <: Res end
+    struct Res10{T<:Res}
+        val::BigInt
 
+    end
+    close_open() = Dict(
+        ')' => '(',
+        ']' => '[',
+        '}' => '{',
+        '>' => '<'
+    )
+
+    close_10(open) = begin
+        open_close = Dict((v,k) for (k,v) in close_open())
+        res = Int[]
+        close_map = Dict(
+            ')' => 1,
+            ']' => 2,
+            '}' => 3,
+            '>' => 4
+        )
+        global s = 0
+        while !isempty(open)
+            o = pop!(open)
+            c = open_close[o]
+
+            s = 5*s + close_map[c]
+        end
+        s
+    end
+    solve(::Val{10}, lines) = lines
+    parse_10(line) = begin
+        co = close_open()
+        
+        opens = Char[]
+        for c in line
+            if c in values(co) 
+                push!(opens, c)
+                continue
+            else
+                v = pop!(opens)
+                if v == co[c]
+                    continue
+                else
+                    return Res10{Corrupt}(error_map_10(c))
+                end
+            end
+        end
+        return Res10{Incomplete}(close_10(opens))
+    end
+    solve(::Val{10}, ::Val{1}; input) = parse_10.(input) |> x-> reduce(+,[r.val for r in x if isa(r,Res10{Corrupt})])
+    solve(::Val{10}, ::Val{2}; input) = parse_10.(input) |> x-> sort([r.val for r in x if isa(r,Res10{Incomplete})]) |> x-> x[convert(Int,(length(x)+1)/2)]
 end

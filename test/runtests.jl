@@ -32,6 +32,9 @@ using Test
 
         @test solve(TestInput, 9, 1) == 15
         @test solve(TestInput, 9, 2) == 1134
+
+        @test solve(TestInput, 10, 1) == 26397
+        @test solve(TestInput, 10, 2) == 288957
     end
 
     @testset "Real Solutions" begin
