@@ -35,6 +35,12 @@ using Test
 
         @test solve(TestInput, 10, 1) == 26397
         @test solve(TestInput, 10, 2) == 288957
+
+        @test solve(TestInput, 11, 1; flashes=10) == 204
+        @test solve(TestInput, 11, 1; flashes=100) == 1656
+
+        @test solve(TestInput, 11, 2) == 195
+
     end
 
     @testset "Real Solutions" begin
@@ -58,5 +64,11 @@ using Test
 
         @test solve(FullInput, 9, 1) == 452
         @test solve(FullInput, 9, 2) == 1263735
+
+        @test solve(FullInput, 10, 1) == 193275
+        @test solve(FullInput, 10, 2) == 2429644557
+
+        @test solve(FullInput, 11, 1) == 1546
+        @test solve(FullInput, 11, 2) == 471
     end
 end

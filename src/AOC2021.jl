@@ -377,4 +377,34 @@ module AOC2021
     end
     solve(::Val{10}, ::Val{1}; input) = parse_10.(input) |> x-> reduce(+,[r.val for r in x if isa(r,Res10{Corrupt})])
     solve(::Val{10}, ::Val{2}; input) = parse_10.(input) |> x-> sort([r.val for r in x if isa(r,Res10{Incomplete})]) |> x-> x[convert(Int,(length(x)+1)/2)]
+
+    solve(::Val{11}, lines) = lines .|> collect .|> pints |> x->hcat(x...)'
+    flashing_11!(input) = begin
+        r,c = size(input)
+        view_input(ci) = CartesianIndex(max(ci[1]-1,1),max(ci[2]-1,1)):CartesianIndex(min(ci[1]+1,r), min(ci[2]+1,c))
+        input .+= 1
+        flashing = Set{CartesianIndex{2}}(findall(isequal(10), input))
+        has_flashed = Set{CartesianIndex{2}}()
+        while !isempty(flashing)
+            f = pop!(flashing)
+            push!(has_flashed, f)
+
+            bumps = setdiff(view_input(f), flashing)
+            
+            input[bumps] .+= 1
+
+            new_flashing = findall(isequal(10), input)
+            
+            !isempty(new_flashing) && push!(flashing, new_flashing...)
+        end
+        input[input.>9] .= 0
+        length(has_flashed)
+    end
+    solve(::Val{11}, ::Val{1}; input, flashes=100) = sum(flashing_11!(input) for _ in 1:flashes)
+    solve(::Val{11}, ::Val{2}; input, flashes = 1_000_000) = begin
+        l = length(input)
+        for i in 1:flashes
+            (l == flashing_11!(input)) && return i
+        end
+    end
 end
