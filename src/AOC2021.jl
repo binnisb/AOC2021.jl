@@ -1,5 +1,6 @@
 module AOC2021
     using Memoize: @memoize
+    using MetaGraphsNext, Graphs
     export solve, FullInput, TestInput
 # Write your package code here.
     
@@ -12,12 +13,14 @@ module AOC2021
             readlines(f)
         end
     end
+    read(::Type{FullInput}, num::Int, part::Int) = read(Puzzle, "$(@__DIR__)/../data/puzzle/$(num)-$(part).txt")
     read(::Type{FullInput}, num::Int) = read(Puzzle, "$(@__DIR__)/../data/puzzle/$(num).txt")
+    read(::Type{TestInput}, num::Int, part::Int) = read(Puzzle, "$(@__DIR__)/../data/puzzle_test/$(num)-$(part).txt")
     read(::Type{TestInput}, num::Int) = read(Puzzle, "$(@__DIR__)/../data/puzzle_test/$(num).txt")
 
 
-    solve(::Type{T}, number, part; only_data=false, kwargs...) where T <: Puzzle = read(T,number) |> input-> solve(Val(number), input) |> x-> only_data ? (return x) : solve( Val(number), Val(part);input=x, kwargs...)
-    
+    solve(::Type{T}, number::Int, part::Int; only_data=false, kwargs...) where T <: Puzzle = read(T,number) |> input-> solve(Val(number), input) |> x-> only_data ? (return x) : solve( Val(number), Val(part);input=x, kwargs...)
+    solve(::Type{T}, number::Int, part::Int, ppart::Int; only_data=false, kwargs...) where T <: Puzzle = read(T,number, ppart) |> input-> solve(Val(number), input) |> x-> only_data ? (return x) : solve( Val(number), Val(part);input=x, kwargs...)
     
     solve(::Val{1}, input) = shift -> map(x->parse(Int,x), input) |> nums->
         sum(1 for i in (shift+1):length(nums) if nums[i] > nums[i-shift])
@@ -406,5 +409,50 @@ module AOC2021
         for i in 1:flashes
             (l == flashing_11!(input)) && return i
         end
+    end
+
+    generate_cave_system(lines) = begin
+        mg = MetaGraph(Graph(), VertexMeta = Int, EdgeMeta = Bool)
+        
+        for l in lines
+            n1,n2 = split(l,'-') .|> Symbol
+            for p ∈ (n1,n2)
+                haskey(mg, p) && continue
+                mg[p] = (lowercase(string(p)) == string(p) ? 1 : 1000000)
+            end
+            mg[n1, n2] = true
+        end
+        mg
+    end
+    
+    find_end(mg::MetaGraph, l::Symbol, history::Vector{Symbol}) = begin
+        history = deepcopy(history)
+        push!(history, l)
+        n = code_for(mg,l)
+        if l == :end
+            return Set([history])
+        end 
+        nl = [label_for(mg, nb) for nb in neighbors(mg,n)]
+        isempty(nl) && return Set([push!(history, :fail)])
+        
+        mg[l] -= 1
+        mg[l] == 0 && rem_vertex!(mg, n)
+        
+        union([find_end(deepcopy(mg), nb, history) for nb in nl]...)
+
+    end
+    get_all_paths(input) = find_end(input, :start, Symbol[]) |> x -> filter(y->y[end] != :fail,x) 
+    solve(::Val{12}, lines) = generate_cave_system(lines) 
+    solve(::Val{12}, ::Val{1}; input) = get_all_paths(input) |> length
+
+    solve(::Val{12}, ::Val{2}; input) = begin
+        small_caves = [label_for(input, i) for i in 1:nv(input) if input[label_for(input,i)] == 1 && label_for(input,i) ∉[:start,:end]]
+        inc_small(ip, c) = begin
+            ip = deepcopy(ip)
+            ip[c] += 1
+            ip
+        end
+        caves = union([get_all_paths(inc_small(input, c)) for c in small_caves]...)
+        length(caves)
     end
 end
