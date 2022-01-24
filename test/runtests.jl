@@ -48,6 +48,8 @@ using Test
         @test solve(TestInput, 12, 2, 1) == 36
         @test solve(TestInput, 12, 2, 2) == 103
         @test solve(TestInput, 12, 2, 3) == 3509
+
+        @test solve(TestInput, 13,1) == 17
     end
 
     @testset "Real Solutions" begin
@@ -80,5 +82,7 @@ using Test
 
         @test solve(FullInput, 12, 1) == 4691
         @test solve(FullInput, 12, 2) == 140718
+
+        @test solve(FullInput, 13, 1) == 850
     end
 end

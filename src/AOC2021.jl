@@ -455,4 +455,41 @@ module AOC2021
         caves = union([get_all_paths(inc_small(input, c)) for c in small_caves]...)
         length(caves)
     end
+
+
+    parse_lines_13(lines) = begin
+        coords = Vector{Tuple{Int,Int}}()
+        folders = Vector{Tuple{Symbol,Int}}()
+
+        parse_folders_line(l) = begin
+            h,t = split(l,'=')
+            (Symbol(h[end]),parse(Int,t))
+        end
+        parse_folders(lns) = [parse_folders_line(l) for l in lns]
+        for (i,line) in enumerate(lines)
+            if isempty(line)
+                push!(folders, parse_folders(lines[i+1:end])...)
+                break
+            end
+            push!(coords,parse.(Int,split(line,',')) |> Tuple)
+        end
+
+        (coords, folders)
+    end
+    mirror(cs,xs,::Val{:y}) = Set([(i, j < xs ? j : 2*xs -j) for (i,j) in cs])
+    mirror(cs,ys,::Val{:x}) = Set([(i < ys ? i : 2*ys - i, j) for (i,j) in cs])
+    
+    solve(::Val{13}, lines) = parse_lines_13(lines)
+
+    solve(::Val{13}, ::Val{1}; input) = input |> x->mirror(x[1],x[2][1][2], Val(x[2][1][1])) |> length
+    solve(::Val{13}, ::Val{2}; input) = begin
+        coords, foldrs = input
+        global couts = Set([(i+1,j+1) for (i,j) in coords])
+        foldrs = [(s,l+1) for (s,l) in foldrs]
+
+        for f in foldrs
+            couts = mirror(couts,f[2],Val(f[1]))
+        end
+        couts
+    end
 end
