@@ -492,4 +492,31 @@ module AOC2021
         end
         couts
     end
+    
+    with_vectors(input, iters=10) = begin
+        bs, mapping = input
+        global bs = bs
+        for _ in 1:iters
+            global bs_tmp = Vector{Char}(undef, 2*length(bs)-1)
+            for (i,e) in enumerate(bs[1:end-1])
+                n = bs[i+1]
+                bs_tmp[2*i-1] = e
+                bs_tmp[2*i+1] = n
+                bs_tmp[2*i] = mapping[(e,n)]
+            end
+            bs = bs_tmp
+        end
+        res = Dict{Char,Int}()
+        for i in bs
+            res[i] = get(res, i, 0) + 1
+        end
+        maximum(values(res)) - minimum(values(res))
+    end
+    solve(::Val{14}, lines) = begin
+        @assert(isempty(lines[2]))
+        basestr = lines[1]
+        totuple(x,y) = Tuple(x),only(y)
+        collect(basestr), Dict(totuple(strip.(split(l,"->"))...) for l in lines[3:end])
+    end
+    solve(::Val{14}, ::Val{1}; input, iters=10) = with_vectors(input, iters)
 end
