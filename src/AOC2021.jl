@@ -1,6 +1,6 @@
 module AOC2021
     using Memoize: @memoize
-    using MetaGraphsNext, Graphs
+    using MetaGraphsNext, Graphs, SimpleWeightedGraphs
     export solve, FullInput, TestInput
 # Write your package code here.
     
@@ -546,4 +546,51 @@ module AOC2021
         h-l
     end
     solve(::Val{14},::Val{2}; input, iters=40) = solve(Val(14),Val(1); input, iters)
+
+    solve(::Val{15}, lines) = begin
+        risk_score = zeros(Int, length(lines), length(lines[1]))
+        for (i,l) in enumerate(lines)
+            for (j,c) in enumerate(l)
+                risk_score[i,j] = parse(Int,c)
+            end
+        end
+        risk_score
+    end
+
+    prep_dijkstra(input) = begin
+        r,c = size(input)
+        g = SimpleWeightedDiGraph(r*c)
+
+        ind_to_node = Dict{Tuple{Int,Int},Int}()
+        node_to_ind = Dict{Int, Tuple{Int,Int}}()
+        get_inds(i,j) = Set([
+            (i, min(c, j+1)),
+            (i, max(1, j-1)),
+            (min(r, i+1), j),
+            (max(1, i-1), j)
+            ])
+        for i in 1:r, j in 1:c
+            node = (j+c*(i-1))
+            ind_to_node[(i,j)] = node
+            node_to_ind[node] = (i,j)
+        end
+        for (n,ind) in node_to_ind
+            for ind2 in get_inds(ind...)
+                n2 = ind_to_node[ind2]
+                add_edge!(g, n2, n, input[ind2...])
+            end
+        end
+        ps = dijkstra_shortest_paths(g,1).dists[end]
+        ps - input[1,1] + input[end,end]
+    end
+    prep_dijkstra_large(input) = begin
+        r,c = size(input)
+        m = zeros(Int, 5*r, 5*c)
+        for i in 1:5, j in 1:5
+            m[1+r*(i-1):r*i,1 + c*(j-1):c*j] = ((input .+ (i+j-3)) .% 9) .+1
+        end
+        prep_dijkstra(m)
+    end
+    solve(::Val{15}, ::Val{1}; input) = prep_dijkstra(input)
+    solve(::Val{15}, ::Val{2}; input) = prep_dijkstra_large(input)
 end
