@@ -512,11 +512,38 @@ module AOC2021
         end
         maximum(values(res)) - minimum(values(res))
     end
+    with_loop(input, iters) = begin
+        chars, mapping = input
+        pairs = Dict((k,0) for k in keys(mapping))
+
+        for i in 1:length(chars)-1
+            pairs[(input.chars[i], input.chars[i+1])] += 1
+        end
+        for i in 1:iters
+            ps = [(v, k,(k[1],mapping[k]),(mapping[k],k[2])) for (k,v) in pairs if v > 0]
+            for (v, o,n1,n2) in ps
+                pairs[o] -= v
+                pairs[n1] += v
+                pairs[n2] += v
+            end
+        end
+        res = Dict{Char,Int}()
+        for ((k,_),v) in pairs
+            res[k] = get(res, k, 0) + v
+        end
+        res[chars[end]] = get(res, chars[end], 0) + 1
+        res
+    end
     solve(::Val{14}, lines) = begin
         @assert(isempty(lines[2]))
         basestr = lines[1]
         totuple(x,y) = Tuple(x),only(y)
-        collect(basestr), Dict(totuple(strip.(split(l,"->"))...) for l in lines[3:end])
+        (chars=collect(basestr), mapping=Dict(totuple(strip.(split(l,"->"))...) for l in lines[3:end]))
     end
-    solve(::Val{14}, ::Val{1}; input, iters=10) = with_vectors(input, iters)
+    solve(::Val{14}, ::Val{1}; input, iters=10) = begin
+        res = with_loop(input, iters)
+        l,h = extrema(values(res))
+        h-l
+    end
+    solve(::Val{14},::Val{2}; input, iters=40) = solve(Val(14),Val(1); input, iters)
 end

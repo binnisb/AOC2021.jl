@@ -88,5 +88,6 @@ using Test
         @test solve(FullInput, 13, 1) == 850
 
         @test solve(FullInput, 14, 1) == 4517
+        @test solve(FullInput, 14, 2) == 4704817645083
     end
 end
